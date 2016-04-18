@@ -1,0 +1,35 @@
+@import "variables";
+
+@mixin paddings() {
+  padding-left: $gutter-width / 2;
+  padding-right: $gutter-width / 2;
+}
+
+@mixin clearfix() {
+  &:before,
+  &:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin row() {
+  margin-left: -$gutter-width / 2;
+  margin-right: -$gutter-width / 2;
+  @include clearfix();
+}
+
+@mixin column() {
+  min-height: 1px;
+  float: left;
+  @include paddings();
+}
+
+@mixin column-width($col-size, $col-count) {
+  width: 100% / $col-count * $col-size;
+}
+
+@mixin offset-width($col-size, $col-count) {
+  margin-left: calc(100% / #{$col-count} * #{$col-size});
+}

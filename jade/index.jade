@@ -1,0 +1,157 @@
+html
+    head
+        link(rel='stylesheet', href='css/build.css')
+        link(rel='stylesheet', href='assets/css/libs.css')
+        script(src='assets/js/libs.js')
+        //
+            script(src='js/lib.js')
+        script(src='js/SHRI.js')
+        script(src='js/app.js')
+    body(ng-app="app" ng-controller="AppController")
+        script(type="text/ng-template" id="editPerson.html")
+            .modal
+                h3.modal__title.
+                    {{ngDialogData.title}}
+                form.modal__form(ng-submit="savePerson(ngDialogData.type, ngDialogData.person);")
+                    input(type="text" class="modal__input" placeholder="Введите имя" ng-model="ngDialogData.person.name")
+                    select(class="modal__select" ng-model="ngDialogData.person.team" ng-options="team.name for team in shri.getTeams() track by team.id;" ng-if="shri.getTeams().length > 0;")
+                    input(type="submit" class="modal__submit" value="Создать")
+        script(type="text/ng-template" id="createTeam.html")
+            .modal
+                h3.modal__title.
+                    Создать команду
+                form.modal__form(ng-submit="saveTeam(ngDialogData.team);")
+                    input(type="text" class="modal__input" placeholder="Введите название команды" ng-model="ngDialogData.team.name")
+                    input(type="submit" class="modal__submit" value="Создать")
+        script(type="text/ng-template" id="createTask.html")
+            .modal
+                h3.modal__title.
+                    Создать задачу
+                form.modal__form(ng-submit="saveTask(ngDialogData.task);")
+                    select(class="modal__select" ng-model="ngDialogData.task.type" ng-options="type.name for type in shri.getTasksTypes() track by task.id;")
+                    input(type="text" class="modal__input" placeholder="Введите название задачи" ng-model="ngDialogData.task.title")
+                    textarea(class="modal__textarea" placeholder="Опишите задачу подробнее" ng-model="ngDialogData.task.desc")
+                    input(type="submit" class="modal__submit" value="Создать")
+        script(type="tet/ng-template" id="editStudent.html")
+            .modal
+                h3.modal__title.
+                    {{ngDialogData.title}}
+                form.modal__form(ng-submit="savePerson(ngDialogData.type, ngDialogData.person);")
+                    input(type="text" class="modal__input" placeholder="Введите имя" ng-model="ngDialogData.person.name")
+                    select(class="modal__select" ng-model="ngDialogData.person.team" ng-options="team.name for team in shri.getTeams() track by team.id;" ng-if="shri.getTeams().length > 0;")
+                    h3.
+                        Добавить задачи
+                    div(ng-repeat="task in shri.getIndividualTasks() track by task.id;")
+                    input(type="submit" class="modal__submit" value="Создать")
+
+
+    .nav.container
+            .nav__row
+                a.nav__link(ng-click="createPerson('mentor');")
+                    span.
+                        Создать ментора
+                a.nav__link(ng-click="createPerson('student');")
+                    span.
+                        Создать студента
+                a.nav__link(ng-click="createTeam();")
+                    span.
+                        Создать команду
+                a.nav__link(ng-click="createTask();")
+                    span.
+                        Создать задачу
+
+        .list.container
+            .list__row
+                .list__table
+                    table
+                        caption.
+                            Список студентов
+                        tr
+                            th.
+                                №
+                            th.
+                                Имя студента
+                            th.
+                                Команда студента
+                            th.
+                                Задачи студента
+                            th.
+                                Ментор студента
+                            th.
+                                Управление
+                        tr(ng-repeat="student in shri.getStudents() track by $index;")
+                            td.
+                                {{$index + 1}}
+                            td.
+                                {{student.name}}
+                            td.
+                                {{student.team.name}}
+                            td.
+
+                            td.
+                                {{student.mentor.name}}
+                            td
+                                a(ng-click="deleteStudent(student);").
+                                    Удалить
+
+                .list__table
+                    table
+                        caption.
+                            Список менторов
+                        tr
+                            th.
+                                №
+                            th.
+                                Имя ментора
+                        tr(ng-repeat="mentor in shri.mentors track by $index;")
+                            td.
+                                {{$index + 1}}
+                            td.
+                                {{mentor.name}}
+            .list__row
+                .list__table
+                    table
+                        caption.
+                            Список команд
+                        tr
+                            th.
+                                №
+                            th.
+                                Название
+                            th.
+                                Студенты
+                            th.
+                                Задачи
+                        tr(ng-repeat="team in shri.getTeams() track by $index;")
+                            td.
+                                {{$index + 1}}
+                            td.
+                                {{team.name}}
+                            td.
+                                {{team.students}}
+                            td.
+                .list__table
+                    table
+                        caption.
+                            Список задач
+                        tr
+                            th.
+                                №
+                            th.
+                                Название
+                            th.
+                                Описание
+                            th.
+                                Тип
+                        tr(ng-repeat="task in shri.getTasks() track by $index;")
+                            td.
+                                {{$index + 1}}
+                            td.
+                                {{task.title}}
+                            td.
+                                {{task.desc}}
+                            td.
+                                {{task.type.name}}
+
+            div.
+                {{shri.findByName('students', 'Дима Козлов')}}
