@@ -3,49 +3,118 @@ html
         link(rel='stylesheet', href='css/build.css')
         link(rel='stylesheet', href='assets/css/libs.css')
         script(src='assets/js/libs.js')
-        //
-            script(src='js/lib.js')
-        script(src='js/SHRI.js')
+        script(src='js/lib.js')
         script(src='js/app.js')
     body(ng-app="app" ng-controller="AppController")
-        script(type="text/ng-template" id="editPerson.html")
+        script(type="text/ng-template" id="createPerson.html")
             .modal
                 h3.modal__title.
                     {{ngDialogData.title}}
-                form.modal__form(ng-submit="savePerson(ngDialogData.type, ngDialogData.person);")
-                    input(type="text" class="modal__input" placeholder="Введите имя" ng-model="ngDialogData.person.name")
-                    select(class="modal__select" ng-model="ngDialogData.person.team" ng-options="team.name for team in shri.getTeams() track by team.id;" ng-if="shri.getTeams().length > 0;")
-                    input(type="submit" class="modal__submit" value="Создать")
+                form.modal__form(name="createPersonForm" ng-submit="savePerson(ngDialogData.type, ngDialogData.person);")
+                    input.modal__input(type="text" placeholder="Введите имя" name="name" ng-model="ngDialogData.person.name" ng-minlength="3" required)
+                    p.modal__error(ng-show="createPersonForm.name.$error.required").
+                        Поле "имя" обязательно для заполнения
+                    p.modal__error(ng-show="createPersonForm.name.$error.minlength").
+                        Поле "имя" должно содержать минимум 3 символа
+                    input.modal__submit(type="submit" value="Создать" ng-disabled="createPersonForm.$invalid")
         script(type="text/ng-template" id="createTeam.html")
             .modal
                 h3.modal__title.
                     Создать команду
-                form.modal__form(ng-submit="saveTeam(ngDialogData.team);")
-                    input(type="text" class="modal__input" placeholder="Введите название команды" ng-model="ngDialogData.team.name")
-                    input(type="submit" class="modal__submit" value="Создать")
+                form.modal__form(name="createTeamForm" ng-submit="shri.addTeam(ngDialogData.team);")
+                    input.modal__input(type="text" placeholder="Введите название команды" name="name" ng-model="ngDialogData.team.name" ng-minlength="3" required)
+                    p.modal__error(ng-show="createTeamForm.name.$error.required").
+                        Поле "название" обязательно для заполнения
+                    p.modal__error(ng-show="createTeamForm.name.$error.minlength").
+                        Поле "название" должно содержать минимум 3 символа
+                    input.modal__submit(type="submit" value="Создать" ng-disabled="createTeamForm.$invalid")
         script(type="text/ng-template" id="createTask.html")
             .modal
                 h3.modal__title.
                     Создать задачу
-                form.modal__form(ng-submit="saveTask(ngDialogData.task);")
-                    select(class="modal__select" ng-model="ngDialogData.task.type" ng-options="type.name for type in shri.getTasksTypes() track by task.id;")
-                    input(type="text" class="modal__input" placeholder="Введите название задачи" ng-model="ngDialogData.task.title")
-                    textarea(class="modal__textarea" placeholder="Опишите задачу подробнее" ng-model="ngDialogData.task.desc")
-                    input(type="submit" class="modal__submit" value="Создать")
-        script(type="tet/ng-template" id="editStudent.html")
+                form.modal__form(name="createTaskForm" ng-submit="saveTask(ngDialogData.type, ngDialogData.task);")
+                    select.modal__select(ng-init="ngDialogData.type = taskTypes[0]" ng-model="ngDialogData.type" ng-options="type.name for type in taskTypes")
+                    input.modal__input(type="text" placeholder="Введите название задачи" name="title" ng-model="ngDialogData.task.title" ng-minlength="3" required)
+                    textarea.modal__textarea(placeholder="Опишите задачу подробнее" name="desc" ng-model="ngDialogData.task.desc" ng-minlength="20" required)
+                    p.modal__error(ng-show="createTaskForm.title.$error.required").
+                        Поле "название" обязательно для заполнения
+                    p.modal__error(ng-show="createTaskForm.title.$error.minlength").
+                        Поле "название" должно содержать минимум 3 символа
+                    p.modal__error(ng-show="createTaskForm.desc.$error.required").
+                        Поле "описание" обязательно для заполнения
+                    p.modal__error(ng-show="createTaskForm.desc.$error.minlength").
+                        Поле "описание" должно содержать минимум 20 символов
+                    input.modal__submit(type="submit" value="Создать")
+        script(type="text/ng-template" id="editStudent.html")
             .modal
                 h3.modal__title.
-                    {{ngDialogData.title}}
-                form.modal__form(ng-submit="savePerson(ngDialogData.type, ngDialogData.person);")
-                    input(type="text" class="modal__input" placeholder="Введите имя" ng-model="ngDialogData.person.name")
-                    select(class="modal__select" ng-model="ngDialogData.person.team" ng-options="team.name for team in shri.getTeams() track by team.id;" ng-if="shri.getTeams().length > 0;")
-                    h3.
-                        Добавить задачи
-                    div(ng-repeat="task in shri.getIndividualTasks() track by task.id;")
-                    input(type="submit" class="modal__submit" value="Создать")
+                    {{ngDialogData.student.name}}
+                form.modal__form
+                    .select-team(ng-if="shri.getTeams().length > 0")
+                        .select-team__title.
+                            Выберите команду
+                        .select-team__item(ng-repeat="team in shri.getTeams() track by team.id;" ng-click="ngDialogData.student.setTeam(team);" ng-class="ngDialogData.student.team == team ? 'select-team__item--active' : '';").
+                            {{team.name}}
+                    .inporgress-tasks(ng-if="ngDialogData.student.getTasks().length > 0;")
+                        h3.inprogress-tasks__title.
+                            Задачи студента
+                        .inprogress-tasks__item(ng-repeat="task in ngDialogData.student.getTasks() track by task.task.id;")
+                            .inprogress-tasks__item-title
+                                button(ng-click="ngDialogData.student.removeTask(task);")
+                                span.
+                                    {{task.task.title}}
+                            .inprogress-tasks__item-mark
+                                span(ng-if="task.mark").
+                                    {{task.mark}}
+                                span(ng-if="!task.mark")
+                                    input(type="text" ng-model="task.markValue")
+                                    button(ng-click="ngDialogData.student.setTaskMark(task.task, task.markValue);" ng-disabled="task.markValue < 1 || task.markValue > 5 || !task.markValue").
+                                        Ok
+                    .free-tasks(ng-if="ngDialogData.student.getFreeTasks().length > 0;")
+                        h3.free-tasks__title.
+                            Доступные задачи
+                        .free-tasks__item(ng-repeat="task in ngDialogData.student.getFreeTasks() track by task.id;" ng-click="ngDialogData.student.addTask(task);").
+                            {{ngDialogData.student.getFreeTasks().length}}
+                    .free-tasks(ng-if="ngDialogData.student.getFreeMentors().length > 0;")
+                        h3.free-tasks__title.
+                            Доступные задачи
+                        .free-tasks__item(ng-repeat="mentor in ngDialogData.student.getFreeMentors() track by $index;" ng-click="ngDialogData.student.setPriority(mentor);").
+                            {{ngDialogData.student.getFreeTasks().length}}
+
+        script(type="text/ng-template" id="editTeam.html")
+            .modal
+                h3.modal__title.
+                    {{ngDialogData.team.name}}
+                form.modal__form
+                    .team-members(ng-if="ngDialogData.team.getMembers().length > 0;")
+                        h3.team-members__title.
+                            Члены команды
+                            {{ngDialogData.team.getMembers().length}}
+                        .team-members__item(ng-repeat="member in ngDialogData.team.getMembers() track by member.id;").
+                            {{member.name}}
+                    .inporgress-tasks(ng-if="ngDialogData.team.getTasks().length > 0;")
+                        h3.inprogress-tasks__title.
+                            Задачи команды
+                        .inprogress-tasks__item(ng-repeat="task in ngDialogData.team.getTasks() track by task.task.id;")
+                            .inprogress-tasks__item-title
+                                button(ng-click="ngDialogData.team.removeTask(task);")
+                                span.
+                                    {{task.task.title}}
+                            .inprogress-tasks__item-mark
+                                span(ng-if="task.mark").
+                                    {{task.mark}}
+                                span(ng-if="!task.mark")
+                                    input(type="text" ng-model="task.markValue")
+                                    button(ng-click="ngDialogData.team.setTaskMark(task.task, task.markValue);" ng-disabled="task.markValue < 1 || task.markValue > 5 || !task.markValue").
+                                        Ok
+                    .free-tasks(ng-if="ngDialogData.team.getFreeTasks().length > 0;")
+                        .free-tasks__title.
+                            Доступные задачи
+                        .free-tasks__item(ng-repeat="task in ngDialogData.team.getFreeTasks() track by task.id;" ng-click="ngDialogData.team.addTask(task);").
+                            {{task.title}}
 
 
-    .nav.container
+        .nav.container
             .nav__row
                 a.nav__link(ng-click="createPerson('mentor');")
                     span.
@@ -58,7 +127,10 @@ html
                         Создать команду
                 a.nav__link(ng-click="createTask();")
                     span.
-                        Создать задачу
+                        Создать <br>задачу
+                a.nav__link.nav__link--sorting(ng-click="shri.sortByPriorities();")
+                    span.
+                        Отсортировать школу
 
         .list.container
             .list__row
@@ -77,22 +149,18 @@ html
                                 Задачи студента
                             th.
                                 Ментор студента
-                            th.
-                                Управление
-                        tr(ng-repeat="student in shri.getStudents() track by $index;")
+                        tr(ng-repeat="student in shri.getStudents() track by $index;" ng-click="editStudent(student);")
                             td.
                                 {{$index + 1}}
                             td.
                                 {{student.name}}
                             td.
                                 {{student.team.name}}
-                            td.
-
+                            td
+                                div(ng-repeat="task in student.tasks track by $index").
+                                    {{task.task.title}}
                             td.
                                 {{student.mentor.name}}
-                            td
-                                a(ng-click="deleteStudent(student);").
-                                    Удалить
 
                 .list__table
                     table
@@ -103,7 +171,7 @@ html
                                 №
                             th.
                                 Имя ментора
-                        tr(ng-repeat="mentor in shri.mentors track by $index;")
+                        tr(ng-repeat="mentor in shri.getMentors() track by $index;")
                             td.
                                 {{$index + 1}}
                             td.
@@ -122,13 +190,14 @@ html
                                 Студенты
                             th.
                                 Задачи
-                        tr(ng-repeat="team in shri.getTeams() track by $index;")
+                        tr(ng-repeat="team in shri.getTeams() track by $index;" ng-click="editTeam(team);")
                             td.
                                 {{$index + 1}}
                             td.
                                 {{team.name}}
-                            td.
-                                {{team.students}}
+                            td
+                                p(ng-repeat="member in team.getMembers() track by $index").
+                                    {{member.name}}
                             td.
                 .list__table
                     table
@@ -152,6 +221,3 @@ html
                                 {{task.desc}}
                             td.
                                 {{task.type.name}}
-
-            div.
-                {{shri.findByName('students', 'Дима Козлов')}}

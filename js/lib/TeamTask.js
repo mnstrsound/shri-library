@@ -1,8 +1,11 @@
-import {Task} from 'Task';
+import {Task} from './Task';
 
 export class TeamTask extends Task {
-    constructor() {
-        super();
-        this.type = 1;
+    constructor(task) {
+        super(task);
+        this.type = {
+            name: 'Командная',
+            slug: 'team'
+        };
     }
 }

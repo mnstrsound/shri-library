@@ -1,9 +1,8 @@
-import {Student} from 'Student';
-import {Mentor} from 'Mentor';
-import {IndividualTask} from 'IndividualTask';
-import {TeamTask} from 'TeamTask';
-import {Team} from 'Team';
-import {Task} from 'Task';
+import {Student} from './Student';
+import {Mentor} from './Mentor';
+import {Team} from './Team';
+import {IndividualTask} from './IndividualTask';
+import {TeamTask} from './TeamTask';
 
 export class SHRI {
     constructor() {
@@ -42,10 +41,16 @@ export class SHRI {
         return team;
     }
 
-    addTask(task) {
+    addTask(type, task) {
         task.id = this.uniqueTaskId++;
         task.shri = this;
-        task = new Task(task);
+        if (type == 'individual') {
+            task = new IndividualTask(task);
+        } else if (type == 'team') {
+            task = new TeamTask(task);
+        } else {
+            throw new Error('Тип должен быть либо Индивидуальный либо Командный!');
+        }
         this.tasks.push(task);
         return task;
     }
@@ -70,7 +75,7 @@ export class SHRI {
     _getTasksByType(type) {
         let tasks = [];
         this.tasks.forEach((task) => {
-            if (task.type === type) {
+            if (task.type.slug === type) {
                 tasks.push(task);
             }
         });
@@ -78,15 +83,11 @@ export class SHRI {
     }
 
     getIndividualTasks() {
-        return this._getTasksByType(0);
+        return this._getTasksByType('individual');
     }
 
     getTeamTasks() {
-        return this._getTasksByType(1);
-    }
-
-    getTasksTypes() {
-        return [{id: 0, name: 'Индивидуальная'},{id: 1, name: 'Командная'}]
+        return this._getTasksByType('team');
     }
 
     findByName(type, name) {
@@ -100,7 +101,32 @@ export class SHRI {
         return founded;
     }
 
+    /*
+    * Валидация перед сортировкой
+    * */
+    _validateBeforeSorting() {
+        let mentors = this.getMentors();
+        let students = this.getStudents();
+        let mentorsCount = mentors.length;
+        let studentsCount = students.length;
+
+        for (let i = 0, len = mentorsCount; i < len; i++) {
+            if (mentors[i].getStudents().length < studentsCount) {
+                throw new Error (`У ментора ${mentors[i].name} не до конца проставлены приоритеты!`);
+                break;
+            }
+        }
+        for (let i = 0, len = studentsCount; i < len; i++) {
+            if (students[i].getStudents().length < mentorsCount) {
+                throw new Error(`У студента ${students[i].name} не до конца проставлены приоритеты!`);
+                break;
+            }
+        }
+    }
+
     sortByPriorities() {
+        this._validateBeforeSorting();
+
         /*
         * Создаем массивы свободных к распределению студентов и менторов
         * */
@@ -148,37 +174,3 @@ export class SHRI {
         }
     }
 }
-/*Закомментировал удаление студентов и менторов*/
-// removeStudent(student) {
-//     let index = this.students.indexOf(student);
-//     if (index === -1) return;
-//     this.students.splice(index, 1);
-// }
-//
-// removeMentor(mentor) {
-//     let index = this.mentors.indexOf(mentor);
-//     if (index === -1) return;
-//     this.mentors.splice(index, 1);
-// }
-
-// freeMentors.forEach((mentor) => {
-//     let maxStudentsCount = 3;
-//     mentor.priorities.every((priority) => {
-//         if (mentor.getStudents().length >= maxStudentsCount) {
-//             freeMentors.splice(freeMentors.indexOf(mentor), 1);
-//             freeStudents.forEach((student) => {
-//                 if (student.priorities.indexOf(mentor) !== -1) {
-//                     student.priorities.splice(student.priorities.indexOf(mentor), 1);
-//                 }
-//             });
-//             return false;
-//         }
-//         if (priority.priorities[0] === mentor && freeStudents.indexOf(priority) !== -1) {
-//             mentor.students.push(priority);
-//             priority.priorities.splice(0, 1);
-//             priority.setMentor(mentor);
-//             freeStudents.splice(freeStudents.indexOf(priority), 1);
-//         }
-//     });
-// });
-

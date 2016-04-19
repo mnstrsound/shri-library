@@ -6,23 +6,44 @@ const sourcemaps = require('gulp-sourcemaps');
 const concat = require('gulp-concat');
 const jade = require('gulp-jade');
 const sass = require('gulp-sass');
+const webpack = require('webpack-stream');
 const bc = 'bower_components/';
 
 gulp.task('watch', () => {
-    gulp.watch('js/lib/**/*.js', ['concatLib']);
+    gulp.watch('js/lib/**/*.js', ['webpack']);
     gulp.watch('js/app/**/*.js', ['concatApp']);
     gulp.watch('jade/**/*.jade', ['jade']);
     gulp.watch('sass/**/*.scss', ['sass']);
     gulp.watch('css/**/*.css', ['concatCSS']);
 });
 
-gulp.task('build', ['concatAssets', 'concatLib', 'concatApp', 'sass', 'concatCSS', 'jade'] );
+gulp.task('build', ['concatAssets', 'concatApp', 'webpack', 'sass', 'concatCSS', 'jade'] );
+
+gulp.task('webpack', function () {
+    gulp.src('./js/lib/SHRI.js')
+        .pipe(webpack({
+            output: {
+                filename: 'lib.js',
+                library: 'lib'
+            },
+            module: {
+                loaders: [{
+                    test: /\.js$/,
+                    loader: 'babel-loader',
+                    query: {
+                        presets: ['es2015']
+                    }
+                }]
+            }
+        }))
+        .pipe(gulp.dest('build/js'));
+});
 
 gulp.task('concatAssets', () => {
     gulp.src([
         bc + 'angular/angular.min.js',
         bc + 'ng-dialog/js/ngDialog.min.js',
-        bc + 'requirejs/require.js',
+        //bc + 'requirejs/require.js'
     ])
         .pipe(concat('libs.js'))
         .pipe(gulp.dest('build/assets/js'));
