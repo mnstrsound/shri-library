@@ -14,10 +14,14 @@ export class SHRI {
         this.uniqueMentorId = 0;
         this.uniqueTeamId = 0;
         this.uniqueTaskId = 0;
+        this.sorted = false;
     }
 
     /*Методы для создания сущностей*/
     addStudent(person) {
+        if (this.sorted) {
+            throw new Error('Невозможно добавить студента, так как школа уже отсортирована!');
+        }
         person.id = this.uniqueStudentId++;
         person.shri = this;
         let student = new Student(person);
@@ -26,6 +30,9 @@ export class SHRI {
     }
 
     addMentor(person) {
+        if (this.sorted) {
+            throw new Error('Невозможно добавить ментора, так как школа уже отсортирована!');
+        }
         person.id = this.uniqueMentorId++;
         person.shri = this;
         let mentor = new Mentor(person);
@@ -55,7 +62,7 @@ export class SHRI {
         return task;
     }
 
-    /*Методы для получения массивов сущнстей*/
+    /*Методы для получения массивов сущностей*/
     getStudents() {
         return this.students;
     }
@@ -105,40 +112,50 @@ export class SHRI {
     * Валидация перед сортировкой
     * */
     _validateBeforeSorting() {
+        if (this.sorted ) {
+            throw new Error('Школа уже отсортирована!');
+        }
         let mentors = this.getMentors();
         let students = this.getStudents();
         let mentorsCount = mentors.length;
         let studentsCount = students.length;
 
         for (let i = 0, len = mentorsCount; i < len; i++) {
-            if (mentors[i].getStudents().length < studentsCount) {
+            if (mentors[i].getPriorities().length < studentsCount) {
                 throw new Error (`У ментора ${mentors[i].name} не до конца проставлены приоритеты!`);
-                break;
             }
         }
         for (let i = 0, len = studentsCount; i < len; i++) {
-            if (students[i].getStudents().length < mentorsCount) {
+            if (students[i].getPriorities().length < mentorsCount) {
                 throw new Error(`У студента ${students[i].name} не до конца проставлены приоритеты!`);
-                break;
             }
         }
     }
 
     sortByPriorities() {
         this._validateBeforeSorting();
-
+        
         /*
-        * Создаем массивы свободных к распределению студентов и менторов
+        * Создаем массивы свободных к распределению студентов и менторов.
         * */
         let freeStudents = this.getStudents().slice(0);
         let freeMentors = this.getMentors().slice(0);
+
         /*
         * Запускаем цикл по распредению студентов среди менторов
         * */
+
         while (freeStudents.length > 0) {
-            for (let i = 0, len = freeMentors.length; i < len; i++) {
-                let mentor = this.mentors[i];
-                let maxStudentsCount = 3;
+            mentorsIterator: for (let i = 0, len = freeMentors.length; i < len; i++) {
+                let mentor = freeMentors[i];
+                /*
+                * Если количество студентов не кратно количеству ментору, то у одного ментора или у нескольких менторов
+                * должно быть на 1 студента больше, и мы должны поволить ему/им набрать еще одного, если у них совпадают приориеты.
+                 * maxCount - максимальное количество студентов, которое может набрать ментор.
+                 * maxStudentsCount - максимальное количество студентов, которое может набрать ментор за итерацию.
+                * */
+                let maxCount = freeStudents.length % freeMentors.length == 0 ? freeStudents.length / freeMentors.length : parseInt(freeStudents.length / freeMentors.length) + 1;
+                let maxStudentsCount = maxCount - mentor.getStudents().length;
 
                 for (let i = 0, len = mentor.priorities.length; i < len; i++) {
                     let priority = mentor.priorities[i];
@@ -147,7 +164,8 @@ export class SHRI {
                     * Если ментор набрал максимальное количество студентов,
                     * то удалем его из свободных к распределению менторов, удаляем его из
                     * списка приоритета остальных участников, чтобы он больше
-                    * не учавствал в сортировке и прерываем цикл.
+                    * не учавствовал в сортировке и прерываем цикл по метке, так как изменилась длина массива().
+                    * TODO: Оптимизировать цикл, без прерывания по метке.
                     * */
                     if (mentor.getStudents().length >= maxStudentsCount) {
                         freeMentors.splice(freeMentors.indexOf(mentor), 1);
@@ -156,7 +174,7 @@ export class SHRI {
                                 student.priorities.splice(student.priorities.indexOf(mentor), 1);
                             }
                         });
-                        break;
+                        break mentorsIterator;
                     }
                     /*Если первый по приоритету ментор студента совпадает со сравниваемым ментором и
                     * студент находится в списке свободных к распределению,
@@ -172,5 +190,6 @@ export class SHRI {
                 }
             }
         }
+        this.sorted = true;
     }
 }

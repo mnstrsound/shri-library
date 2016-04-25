@@ -74,12 +74,39 @@ html
                         h3.free-tasks__title.
                             Доступные задачи
                         .free-tasks__item(ng-repeat="task in ngDialogData.student.getFreeTasks() track by task.id;" ng-click="ngDialogData.student.addTask(task);").
-                            {{ngDialogData.student.getFreeTasks().length}}
-                    .free-tasks(ng-if="ngDialogData.student.getFreeMentors().length > 0;")
-                        h3.free-tasks__title.
-                            Доступные задачи
-                        .free-tasks__item(ng-repeat="mentor in ngDialogData.student.getFreeMentors() track by $index;" ng-click="ngDialogData.student.setPriority(mentor);").
-                            {{ngDialogData.student.getFreeTasks().length}}
+                            {{task.title}}
+                    .priorities
+                        h3.priorities__title(ng-if="ngDialogData.student.getPriorities().length > 0").
+                            Приоритеты
+                        ul.priorities__list(ng-if="ngDialogData.student.getPriorities().length > 0")
+                            li(ng-repeat="priority in ngDialogData.student.getPriorities() track by $index;")
+                                small.
+                                    {{$index}}.
+                                span.
+                                    {{priority.name}}
+                        h3.priorities__title(ng-if="ngDialogData.student.getFreePriorities().length > 0").
+                            Выберите менторов по убыванию приоритета
+                        .priorities__item(ng-repeat="priority in ngDialogData.student.getFreePriorities();" ng-click="ngDialogData.student.setPriority(priority);").
+                            {{priority.name}}
+
+        script(type="text/ng-template" id="editMentor.html")
+            .modal
+                h3.modal__title.
+                    {{ngDialogData.mentor.name}}
+                form.modal__form
+                    .priorities
+                        h3.priorities__title(ng-if="ngDialogData.mentor.getPriorities().length > 0").
+                            Приоритеты
+                        ul.priorities__list(ng-if="ngDialogData.mentor.getPriorities().length > 0")
+                            li(ng-repeat="priority in ngDialogData.mentor.getPriorities() track by $index;")
+                                small.
+                                    {{$index}}.
+                                span.
+                                    {{priority.name}}
+                        h3.priorities__title(ng-if="ngDialogData.mentor.getFreePriorities().length > 0").
+                            Выберите студентов по убыванию приоритета
+                        .priorities__item(ng-repeat="priority in ngDialogData.mentor.getFreePriorities();" ng-click="ngDialogData.mentor.setPriority(priority);").
+                            {{priority.name}}
 
         script(type="text/ng-template" id="editTeam.html")
             .modal
@@ -171,7 +198,7 @@ html
                                 №
                             th.
                                 Имя ментора
-                        tr(ng-repeat="mentor in shri.getMentors() track by $index;")
+                        tr(ng-repeat="mentor in shri.getMentors() track by $index;" ng-click="editMentor(mentor);")
                             td.
                                 {{$index + 1}}
                             td.

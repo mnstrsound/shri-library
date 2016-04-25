@@ -12,7 +12,7 @@ export class Student {
         this.name = person.name;
         this.tasks = [];
         this.priorities = [];
-        this.mentor = {};
+        this.mentor = null;
         if (person.team && person.team instanceof Team) {
             this.team = person.team;
         }
@@ -115,7 +115,6 @@ export class Student {
         return this.tasks;
     }
 
-
     /*
     * Получение списка доступных заданий (список всех существующих задач не включая уже назначенные задания)
     * */
@@ -131,22 +130,36 @@ export class Student {
     }
 
     /*
+     * Получение ментора
+     * */
+    getMentor() {
+        return this.mentor;
+    }
+
+    /*
     * Функция получения приоритетов
     * */
     getPriorities() {
+        if (this.mentor) {
+            return [];
+        }
         return this.priorities;
     }
 
     /*
     * Функция получения доступных для заполнения менторов
     * */
-    getFreeMentors() {
+    getFreePriorities() {
+        if (this.mentor) {
+            return [];
+        }
+
         let mentors = this.shri.getMentors();
-        let currentMetors = this.getPriorities();
+        let currentMentors = this.getPriorities();
         let freeMentors = [];
 
         for (let i = 0, len = mentors.length; i < len; i++) {
-            if (current.mentors.indexOf(mentors[i]) == -1) {
+            if (currentMentors.indexOf(mentors[i]) == -1) {
                 freeMentors.push(mentors[i]);
             }
         }

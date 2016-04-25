@@ -67,7 +67,6 @@ input, textarea, button {
     }
   }
 }
-
 .list {
   &__row {
     margin-bottom: 20px;
@@ -262,6 +261,7 @@ input, textarea, button {
   }
 }
 .free-tasks,
+.priorities,
 .select-team {
   padding-right: 10px;
   &__title {
@@ -282,6 +282,24 @@ input, textarea, button {
     cursor: pointer;
     &--active {
       background: darken(#e67e22, 5%);
+    }
+  }
+}
+.priorities {
+  &__list {
+    margin-bottom: 5px;
+    li {
+      overflow: hidden;
+      border-bottom: 1px solid #ccc;
+      font-size: 14px;
+      small {
+        float: left;
+        width: 10%;
+        text-align: center;
+      }
+      span {
+        width: 90%;
+      }
     }
   }
 }

@@ -117,6 +117,17 @@ function AppController($scope, ngDialog) {
         });
     };
 
+    $scope.editMentor = function (mentor) {
+        ngDialog.open({
+            template: 'editMentor.html',
+            className: 'ngdialog-theme-default',
+            scope: $scope,
+            data: {
+                mentor: mentor
+            }
+        });
+    };
+
     $scope.editTeam = function (team) {
         ngDialog.open({
             template: 'editTeam.html',
@@ -130,19 +141,19 @@ function AppController($scope, ngDialog) {
 
     $scope.shri = new lib.SHRI;
 
-    // var student1 = $scope.shri.addStudent({name: 'Петров Егор1'});
-    // var student2 = $scope.shri.addStudent({name: 'Петров Егор2'});
-    // var student3 = $scope.shri.addStudent({name: 'Петров Егор3'});
-    // var student4 = $scope.shri.addStudent({name: 'Петров Егор4'});
-    // var student5 = $scope.shri.addStudent({name: 'Петров Егор5'});
-    // var student6 = $scope.shri.addStudent({name: 'Петров Егор6'});
-    // var student7 = $scope.shri.addStudent({name: 'Петров Егор7'});
-    // var student8 = $scope.shri.addStudent({name: 'Петров Егор8'});
-    // var student9 = $scope.shri.addStudent({name: 'Петров Егор9'});
+    var student1 = $scope.shri.addStudent({name: 'Петров Егор1'});
+    var student2 = $scope.shri.addStudent({name: 'Петров Егор2'});
+    var student3 = $scope.shri.addStudent({name: 'Петров Егор3'});
+    var student4 = $scope.shri.addStudent({name: 'Петров Егор4'});
+    var student5 = $scope.shri.addStudent({name: 'Петров Егор5'});
+    var student6 = $scope.shri.addStudent({name: 'Петров Егор6'});
+    var student7 = $scope.shri.addStudent({name: 'Петров Егор7'});
+    var student8 = $scope.shri.addStudent({name: 'Петров Егор8'});
+    var student9 = $scope.shri.addStudent({name: 'Петров Егор9'});
     //
-    // var mentor1 = $scope.shri.addMentor({'name': 'Ментор1'});
-    // var mentor2 = $scope.shri.addMentor({'name': 'Ментор2'});
-    // var mentor3 = $scope.shri.addMentor({'name': 'Ментор3'});
+    var mentor1 = $scope.shri.addMentor({'name': 'Ментор1'});
+    var mentor2 = $scope.shri.addMentor({'name': 'Ментор2'});
+    var mentor3 = $scope.shri.addMentor({'name': 'Ментор3'});
     //
     // student1.setPriorities([mentor1, mentor3, mentor2]);
     // student2.setPriorities([mentor3, mentor2, mentor1]);
