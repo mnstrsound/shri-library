@@ -1,0 +1,221 @@
+
+<html>
+  <head>
+    <link rel="stylesheet" href="css/build.css"/>
+    <link rel="stylesheet" href="assets/css/libs.css"/>
+    <script src="assets/js/libs.js"></script>
+    <script src="js/lib.js"></script>
+    <script src="js/app.js"></script>
+  </head>
+  <body ng-app="app" ng-controller="AppController">
+    <script type="text/ng-template" id="createPerson.html">
+      <div class="modal">
+        <h3 class="modal__title">{{ngDialogData.title}}</h3>
+        <form name="createPersonForm" ng-submit="savePerson(ngDialogData.type, ngDialogData.person);" class="modal__form">
+          <input type="text" placeholder="Введите имя" name="name" ng-model="ngDialogData.person.name" ng-minlength="3" required="required" class="modal__input"/>
+          <p ng-show="createPersonForm.name.$error.required" class="modal__error">Поле "имя" обязательно для заполнения</p>
+          <p ng-show="createPersonForm.name.$error.minlength" class="modal__error">Поле "имя" должно содержать минимум 3 символа</p>
+          <input type="submit" value="Создать" ng-disabled="createPersonForm.$invalid" class="modal__submit"/>
+        </form>
+      </div>
+    </script>
+    <script type="text/ng-template" id="createTeam.html">
+      <div class="modal">
+        <h3 class="modal__title">Создать команду</h3>
+        <form name="createTeamForm" ng-submit="shri.addTeam(ngDialogData.team);" class="modal__form">
+          <input type="text" placeholder="Введите название команды" name="name" ng-model="ngDialogData.team.name" ng-minlength="3" required="required" class="modal__input"/>
+          <p ng-show="createTeamForm.name.$error.required" class="modal__error">Поле "название" обязательно для заполнения</p>
+          <p ng-show="createTeamForm.name.$error.minlength" class="modal__error">Поле "название" должно содержать минимум 3 символа</p>
+          <input type="submit" value="Создать" ng-disabled="createTeamForm.$invalid" class="modal__submit"/>
+        </form>
+      </div>
+    </script>
+    <script type="text/ng-template" id="createTask.html">
+      <div class="modal">
+        <h3 class="modal__title">Создать задачу</h3>
+        <form name="createTaskForm" ng-submit="saveTask(ngDialogData.type, ngDialogData.task);" class="modal__form">
+          <select ng-init="ngDialogData.type = taskTypes[0]" ng-model="ngDialogData.type" ng-options="type.name for type in taskTypes" class="modal__select"></select>
+          <input type="text" placeholder="Введите название задачи" name="title" ng-model="ngDialogData.task.title" ng-minlength="3" required="required" class="modal__input"/>
+          <textarea placeholder="Опишите задачу подробнее" name="desc" ng-model="ngDialogData.task.desc" ng-minlength="20" required="required" class="modal__textarea"></textarea>
+          <p ng-show="createTaskForm.title.$error.required" class="modal__error">Поле "название" обязательно для заполнения</p>
+          <p ng-show="createTaskForm.title.$error.minlength" class="modal__error">Поле "название" должно содержать минимум 3 символа</p>
+          <p ng-show="createTaskForm.desc.$error.required" class="modal__error">Поле "описание" обязательно для заполнения</p>
+          <p ng-show="createTaskForm.desc.$error.minlength" class="modal__error">Поле "описание" должно содержать минимум 20 символов</p>
+          <input type="submit" value="Создать" class="modal__submit"/>
+        </form>
+      </div>
+    </script>
+    <script type="text/ng-template" id="editStudent.html">
+      <div class="modal">
+        <h3 class="modal__title">{{ngDialogData.student.name}}</h3>
+        <form class="modal__form">
+          <div ng-if="shri.getTeams().length &gt; 0" class="select-team">
+            <div class="select-team__title">Выберите команду</div>
+            <div ng-repeat="team in shri.getTeams() track by team.id;" ng-click="ngDialogData.student.setTeam(team);" ng-class="ngDialogData.student.team == team ? 'select-team__item--active' : '';" class="select-team__item">{{team.name}}</div>
+          </div>
+          <div ng-if="ngDialogData.student.getTasks().length &gt; 0;" class="inporgress-tasks">
+            <h3 class="inprogress-tasks__title">Задачи студента</h3>
+            <div ng-repeat="task in ngDialogData.student.getTasks() track by task.task.id;" class="inprogress-tasks__item">
+              <div class="inprogress-tasks__item-title">
+                <button ng-click="ngDialogData.student.removeTask(task);"></button><span>{{task.task.title}}</span>
+              </div>
+              <div class="inprogress-tasks__item-mark"><span ng-if="task.mark">{{task.mark}}</span><span ng-if="!task.mark">
+                  <input type="text" ng-model="task.markValue"/>
+                  <button ng-click="ngDialogData.student.setTaskMark(task.task, task.markValue);" ng-disabled="task.markValue &lt; 1 || task.markValue &gt; 5 || !task.markValue">Ok</button></span></div>
+            </div>
+          </div>
+          <div ng-if="ngDialogData.student.getFreeTasks().length &gt; 0;" class="free-tasks">
+            <h3 class="free-tasks__title">Доступные задачи</h3>
+            <div ng-repeat="task in ngDialogData.student.getFreeTasks() track by task.id;" ng-click="ngDialogData.student.addTask(task);" class="free-tasks__item">{{task.title}}</div>
+          </div>
+          <div class="priorities">
+            <h3 ng-if="ngDialogData.student.getPriorities().length &gt; 0" class="priorities__title">Приоритеты</h3>
+            <ul ng-if="ngDialogData.student.getPriorities().length &gt; 0" class="priorities__list">
+              <li ng-repeat="priority in ngDialogData.student.getPriorities() track by $index;"><small>{{$index}}.</small><span>{{priority.name}}</span></li>
+            </ul>
+            <h3 ng-if="ngDialogData.student.getFreePriorities().length &gt; 0" class="priorities__title">Выберите менторов по убыванию приоритета</h3>
+            <div ng-repeat="priority in ngDialogData.student.getFreePriorities();" ng-click="ngDialogData.student.setPriority(priority);" class="priorities__item">
+              {{priority.name}}
+              
+            </div>
+          </div>
+        </form>
+      </div>
+    </script>
+    <script type="text/ng-template" id="editMentor.html">
+      <div class="modal">
+        <h3 class="modal__title">{{ngDialogData.mentor.name}}</h3>
+        <form class="modal__form">
+          <div class="priorities">
+            <h3 ng-if="ngDialogData.mentor.getPriorities().length &gt; 0" class="priorities__title">Приоритеты</h3>
+            <ul ng-if="ngDialogData.mentor.getPriorities().length &gt; 0" class="priorities__list">
+              <li ng-repeat="priority in ngDialogData.mentor.getPriorities() track by $index;"><small>{{$index}}.</small><span>{{priority.name}}</span></li>
+            </ul>
+            <h3 ng-if="ngDialogData.mentor.getFreePriorities().length &gt; 0" class="priorities__title">Выберите студентов по убыванию приоритета</h3>
+            <div ng-repeat="priority in ngDialogData.mentor.getFreePriorities();" ng-click="ngDialogData.mentor.setPriority(priority);" class="priorities__item">
+              {{priority.name}}
+              
+            </div>
+          </div>
+        </form>
+      </div>
+    </script>
+    <script type="text/ng-template" id="editTeam.html">
+      <div class="modal">
+        <h3 class="modal__title">{{ngDialogData.team.name}}</h3>
+        <form class="modal__form">
+          <div ng-if="ngDialogData.team.getMembers().length &gt; 0;" class="team-members">
+            <h3 class="team-members__title">
+              Члены команды
+              {{ngDialogData.team.getMembers().length}}
+            </h3>
+            <div ng-repeat="member in ngDialogData.team.getMembers() track by member.id;" class="team-members__item">{{member.name}}</div>
+          </div>
+          <div ng-if="ngDialogData.team.getTasks().length &gt; 0;" class="inporgress-tasks">
+            <h3 class="inprogress-tasks__title">Задачи команды</h3>
+            <div ng-repeat="task in ngDialogData.team.getTasks() track by task.task.id;" class="inprogress-tasks__item">
+              <div class="inprogress-tasks__item-title">
+                <button ng-click="ngDialogData.team.removeTask(task);"></button><span>{{task.task.title}}</span>
+              </div>
+              <div class="inprogress-tasks__item-mark"><span ng-if="task.mark">{{task.mark}}</span><span ng-if="!task.mark">
+                  <input type="text" ng-model="task.markValue"/>
+                  <button ng-click="ngDialogData.team.setTaskMark(task.task, task.markValue);" ng-disabled="task.markValue &lt; 1 || task.markValue &gt; 5 || !task.markValue">Ok</button></span></div>
+            </div>
+          </div>
+          <div ng-if="ngDialogData.team.getFreeTasks().length &gt; 0;" class="free-tasks">
+            <div class="free-tasks__title">Доступные задачи</div>
+            <div ng-repeat="task in ngDialogData.team.getFreeTasks() track by task.id;" ng-click="ngDialogData.team.addTask(task);" class="free-tasks__item">
+              {{task.title}}
+              
+              
+            </div>
+          </div>
+        </form>
+      </div>
+    </script>
+    <div class="nav container">
+      <div class="nav__row"><a ng-click="createPerson('mentor');" class="nav__link"><span>Создать ментора</span></a><a ng-click="createPerson('student');" class="nav__link"><span>Создать студента</span></a><a ng-click="createTeam();" class="nav__link"><span>Создать команду</span></a><a ng-click="createTask();" class="nav__link"><span>Создать <br>задачу</span></a><a ng-click="shri.sortByPriorities();" class="nav__link nav__link--sorting"><span>
+            Отсортировать школу
+            </span></a></div>
+    </div>
+    <div class="list container">
+      <div class="list__row">
+        <div class="list__table">
+          <table>
+            <caption>Список студентов</caption>
+            <tr>
+              <th>№</th>
+              <th>Имя студента</th>
+              <th>Команда студента</th>
+              <th>Задачи студента</th>
+              <th>Ментор студента</th>
+            </tr>
+            <tr ng-repeat="student in shri.getStudents() track by $index;" ng-click="editStudent(student);">
+              <td>{{$index + 1}}</td>
+              <td>{{student.name}}</td>
+              <td>{{student.team.name}}</td>
+              <td>
+                <div ng-repeat="task in student.tasks track by $index">{{task.task.title}}</div>
+              </td>
+              <td>
+                {{student.mentor.name}}
+                
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="list__table">
+          <table>
+            <caption>Список менторов</caption>
+            <tr>
+              <th>№</th>
+              <th>Имя ментора</th>
+            </tr>
+            <tr ng-repeat="mentor in shri.getMentors() track by $index;" ng-click="editMentor(mentor);">
+              <td>{{$index + 1}}</td>
+              <td>{{mentor.name}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="list__row">
+        <div class="list__table">
+          <table>
+            <caption>Список команд</caption>
+            <tr>
+              <th>№</th>
+              <th>Название</th>
+              <th>Студенты</th>
+              <th>Задачи</th>
+            </tr>
+            <tr ng-repeat="team in shri.getTeams() track by $index;" ng-click="editTeam(team);">
+              <td>{{$index + 1}}</td>
+              <td>{{team.name}}</td>
+              <td>
+                <p ng-repeat="member in team.getMembers() track by $index">{{member.name}}</p>
+              </td>
+              <td></td>
+            </tr>
+          </table>
+        </div>
+        <div class="list__table">
+          <table>
+            <caption>Список задач</caption>
+            <tr>
+              <th>№</th>
+              <th>Название</th>
+              <th>Описание</th>
+              <th>Тип</th>
+            </tr>
+            <tr ng-repeat="task in shri.getTasks() track by $index;">
+              <td>{{$index + 1}}</td>
+              <td>{{task.title}}</td>
+              <td>{{task.desc}}</td>
+              <td>{{task.type.name}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
